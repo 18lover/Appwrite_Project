@@ -1,27 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { databases } from "../Appwrite/AppwriteConfig";
+import React, { useEffect, useState } from 'react';
+import { databases } from '../Appwrite/AppwriteConfig'; 
 
-function Todos() {
+function Todos({ refresh }) {
   const [todos, setTodos] = useState([]);
-  const [loader, setLoader] = useState(true);
+  const [loader,setLoader] = useState(false)
 
   useEffect(() => {
     const fetchTodos = async () => {
+      setLoader(true)
       try {
-        const response = await databases.listDocuments(
-          "6686173e0035959fabf4",
-          "66867ca9003a4f283471"
-        );
+        const response = await databases.listDocuments('6686173e0035959fabf4', '66867ca9003a4f283471');
         setTodos(response.documents);
       } catch (error) {
-        console.log(error);
-      } finally {
-        setLoader(false);
+        console.error(error);
       }
+      setLoader(false)
     };
-
+    
     fetchTodos();
-  }, []);
+  }, [refresh]); // Re
 
   const handleDelete = async (id) => {
     try {
@@ -31,7 +28,6 @@ function Todos() {
       console.log(error);
     }
   };
-
   return (
     <div className="max-w-7xl mx-auto">
       <p className="text-xl font-bold mb-2">Todo List</p>
@@ -46,7 +42,7 @@ function Todos() {
                   <p>{todo.Name}</p>
                 </div>
                 <div>
-                  <span className="text-red-400 cursor-pointer" onClick={() => handleDelete(todo.$id)}>
+                  <span className="text-red-400 cursor-pointer" onClick={() => handleDelete(todo.$id)} >
                     Delete
                   </span>
                 </div>

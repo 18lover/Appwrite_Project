@@ -47,8 +47,6 @@ function Profile() {
           </div>
           {/* TODO FORM */}
           <Todoform />
-          {/* TODOS BOX */}
-          <Todos />
         </>
       ) : (
         <p className="mt-4">
