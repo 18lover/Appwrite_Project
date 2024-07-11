@@ -1,33 +1,49 @@
-import React, { useEffect, useState } from 'react';
-import { databases } from '../Appwrite/AppwriteConfig'; 
+import React, { useEffect, useState } from "react";
+import { account, databases } from "../Appwrite/AppwriteConfig"; // Adjust the import as needed
 
-function Todos({ refresh }) {
+function Todos({refresh}) {
   const [todos, setTodos] = useState([]);
-  const [loader,setLoader] = useState(false)
+  const [loader, setLoader] = useState(true);
 
   useEffect(() => {
     const fetchTodos = async () => {
-      setLoader(true)
       try {
-        const response = await databases.listDocuments('6686173e0035959fabf4', '66867ca9003a4f283471');
-        setTodos(response.documents);
+        const user = await account.get();
+        const userId = user.$id;
+
+        const response = await databases.listDocuments(
+          '6686173e0035959fabf4', // Replace with your database ID
+          '66867ca9003a4f283471', // Replace with your collection ID
+        );
+
+        const userTodos = response.documents.filter(doc => doc.userId === userId);
+        setTodos(userTodos);
+        setLoader(false);
       } catch (error) {
         console.error(error);
+        setLoader(false);
       }
-      setLoader(false)
     };
-    
-    fetchTodos();
-  }, [refresh]); // Re
 
-  const handleDelete = async (id) => {
+    fetchTodos();
+  }, [refresh]);
+
+  const deleteTodo = async (todoId) => {
     try {
-      await databases.deleteDocument("6686173e0035959fabf4", "66867ca9003a4f283471", id);
-      setTodos(todos.filter(todo => todo.$id !== id));
+      await databases.deleteDocument(
+        '6686173e0035959fabf4', // Replace with your database ID
+        '66867ca9003a4f283471', // Replace with your collection ID
+        todoId
+      );
+
+      // Remove the deleted todo from the state
+      setTodos(todos.filter(todo => todo.$id !== todoId));
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      setError("Failed to delete todo. Please try again.");
     }
   };
+
   return (
     <div className="max-w-7xl mx-auto">
       <p className="text-xl font-bold mb-2">Todo List</p>
@@ -35,19 +51,20 @@ function Todos({ refresh }) {
         <p>Loading ...</p>
       ) : (
         <div>
-          {todos &&
-            todos.map((todo) => (
-              <div key={todo.$id} className="p-4 flex items-center justify-between border-b-2 bg-gray-100 rounded-lg mb-1">
+          {todos.map(todo => (
+            <div key={todo.$id}>
+              <div className="p-4 flex items-center justify-between border-b-2 bg-gray-100 rounded-lg mb-1">
                 <div>
                   <p>{todo.Name}</p>
                 </div>
                 <div>
-                  <span className="text-red-400 cursor-pointer" onClick={() => handleDelete(todo.$id)} >
+                  <span className="text-red-400 cursor-pointer" onClick={() => deleteTodo(todo.$id)}>
                     Delete
                   </span>
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -1,34 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { databases } from '../Appwrite/AppwriteConfig'; 
+import { account, databases } from '../Appwrite/AppwriteConfig'; // Adjust the import as needed
 import Todos from './Todos';
 
 function Todoform() {
   const [todo, setTodo] = useState('');
   const [refresh, setRefresh] = useState(false); // To trigger refresh of Todos component
 
-  useEffect(() => {
-    // No need to do anything inside useEffect in this case
-  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await databases.createDocument(
-        '6686173e0035959fabf4', 
-        '66867ca9003a4f283471', 
-        uuidv4(), 
-        { Name: todo }
-      );
-      console.log(response);
-      setRefresh(!refresh); // Toggle refresh state to re-render Todos component
-    } catch (error) {
-      console.error(error);
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const user = await account.get();
+    const userId = user.$id;
+    const response = await databases.createDocument(
+      '6686173e0035959fabf4', // Replace with your database ID
+      '66867ca9003a4f283471', // Replace with your collection ID
+      uuidv4(), // Generate a unique ID for the document
+      { Name:todo, userId } // Include userId in the document data
+    );
+    console.log(response);
+    setRefresh(!refresh); 
+  } catch (error) {
+    console.error(error);
+  }
 
-    e.target.reset();
-    setTodo('');
-  };
+  e.target.reset();
+  setTodo(''); // Clear the state
+};
 
   return (
     <>
@@ -62,3 +61,5 @@ function Todoform() {
 }
 
 export default Todoform;
+
+
